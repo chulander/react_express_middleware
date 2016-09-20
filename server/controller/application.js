@@ -4,7 +4,6 @@ const React = require('react');
 const ReactDOMServer = require('react-dom/server');
 const App = require('./generated/app');
 
-const app = express();
 
 app.get('/', (request, response) => {
   response.send(ReactDOMServer.renderToString(<App />));

@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const CLIENT_DIR = path.resolve(__dirname, 'client');
@@ -18,33 +19,22 @@ const loaders = [{
   }
 ];
 
-module.exports = [{
-  name: 'client',
-  target: 'web',
-  context: CLIENT_DIR,
-  entry: './index.js',
-  output: {
-    path: DIST_DIR,
-    filename: 'bundle.js'
-  },
-  module: {
-    loaders: loaders
-  },
-  resolve: {
-    alias: {
-      components: path.resolve(CLIENT_DIR, 'components')
-    }
-  },
-  plugins: [
-    new ExtractTextPlugin('bundle.css', {allChunks: true})
-  ]
-},
+const nodeModules = {};
+fs.readdirSync('node_modules')
+  .filter(function(x) {
+    return ['.bin'].indexOf(x) === -1;
+  })
+  .forEach(function(mod) {
+    nodeModules[mod] = 'commonjs ' + mod;
+  });
+
+
+module.exports = [
   {
     name: 'server',
     target: 'node',
-    context: CLIENT_DIR,
     entry: {
-      app: './components/app/index.js'
+      Slider: './server/index.js'
     },
     output: {
       path: SERVER_DIR,
@@ -55,15 +45,14 @@ module.exports = [{
     module: {
       loaders: [
         {
-          test: /\.jsx?$/,
-          loaders: ['babel?cacheDirectory', 'babel?presets[]=es2015,presets[]=react,presets[]=react-hmre,plugins[]=transform-runtime'],
+          test: /\.js?$/,
+          loader: 'babel',
+          query: {
+            presets: ['es2015','react'],
+            plugins:['transform-runtime']
+          }
         }
       ]
-    },
-    resolve: {
-      alias: {
-        components: path.resolve(CLIENT_DIR, 'components')
-      }
     },
     plugins: [
       new ExtractTextPlugin('[name].css')
